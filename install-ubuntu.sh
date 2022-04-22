@@ -18,7 +18,7 @@ if [ -d "$folder" ]; then
     first=1
     echo "skipping downloading"
 fi
-targzball="ubuntu.tar..gz"
+targzball="ubuntu.tar.gz"
 if [ "$first" != 1 ];then
     if [ ! -f "$targzball" ]; then
         echo "downloading ubuntu-image"
