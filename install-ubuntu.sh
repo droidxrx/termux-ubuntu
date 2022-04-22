@@ -54,6 +54,19 @@ if [ "$first" != 1 ];then
 		ff02::2     ip6-allrouters
 		ff02::3     ip6-allhosts
 	EOF
+	stubs=()
+    stubs+=('usr/sbin/groupadd')
+    stubs+=('usr/sbin/groupdel')
+    stubs+=('usr/bin/groups')
+    stubs+=('usr/sbin/useradd')
+    stubs+=('usr/sbin/usermod')
+    stubs+=('usr/sbin/userdel')
+    stubs+=('usr/bin/chage')
+    stubs+=('usr/bin/mesg')
+    for f in ${stubs[@]};do
+        echo "Writing stub: $f"
+        echo -e "#!/bin/sh\nexit" > "$f"
+    done
     cd $cur
 fi
 
