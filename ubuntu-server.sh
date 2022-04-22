@@ -18,7 +18,7 @@ if [ -d "$folder" ]; then
     first=1
     echo "skipping downloading"
 fi
-targzball="ubuntu.tar.gz"
+targzball="ubuntu.tar.xz"
 if [ "$first" != 1 ];then
     if [ ! -f "$targzball" ]; then
         echo "downloading ubuntu-image"
@@ -38,7 +38,7 @@ if [ "$first" != 1 ];then
             *)
                 echo "unknown architecture"; exit 1 ;;
 		esac
-	wget "https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-${archurl}.tar.gz" -O $targzball
+	wget "https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-${archurl}-root.tar.xz " -O $targzball
     fi
     cur=`pwd`
     mkdir -p $folder
