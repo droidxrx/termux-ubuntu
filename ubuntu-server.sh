@@ -45,9 +45,8 @@ if [ "$first" != 1 ];then
     cd $folder
     echo "decompressing ubuntu image"
     proot --link2symlink tar -xf "${cur}/${targzball}" --exclude='dev'||:
-#     echo "fixing nameserver, otherwise it can't connect to the internet"
-#     echo "nameserver 8.8.8.8" >> etc/resolv.conf
-#     echo "nameserver 8.8.4.4" >> etc/resolv.conf
+    echo "nameserver 8.8.8.8" > etc/resolv.conf
+    echo "nameserver 8.8.4.4" >> etc/resolv.conf
 #     cat <<- EOF > "etc/hosts"
 # 		# IPv4.
 # 		127.0.0.1   localhost.localdomain localhost
