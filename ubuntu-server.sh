@@ -38,7 +38,7 @@ if [ "$first" != 1 ];then
             *)
                 echo "unknown architecture"; exit 1 ;;
 		esac
-	wget "https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-${archurl}-root.tar.xz " -O $targzball
+	wget "https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-${archurl}-root.tar.xz" -O $targzball
     fi
     cur=`pwd`
     mkdir -p $folder
