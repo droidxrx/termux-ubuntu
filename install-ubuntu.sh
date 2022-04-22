@@ -41,20 +41,19 @@ if [ "$first" != 1 ];then
     echo "decompressing ubuntu image"
     proot --link2symlink tar -xf $cur/ubuntu.tar.gz --exclude='dev'||:
     echo "fixing nameserver, otherwise it can't connect to the internet"
-    echo "nameserver 8.8.8.8" > etc/resolv.conf
-    stubs=()
-    stubs+=('usr/sbin/groupadd')
-    stubs+=('usr/sbin/groupdel')
-    stubs+=('usr/bin/groups')
-    stubs+=('usr/sbin/useradd')
-    stubs+=('usr/sbin/usermod')
-    stubs+=('usr/sbin/userdel')
-    stubs+=('usr/bin/chage')
-    stubs+=('usr/bin/mesg')
-    for f in ${stubs[@]};do
-        echo "Writing stub: $f"
-        echo -e "#!/bin/sh\nexit" > "$f"
-    done
+    echo "nameserver 8.8.8.8" >> etc/resolv.conf
+    echo "nameserver 8.8.4.4" >> etc/resolv.conf
+    cat <<- EOF > "etc/hosts"
+		# IPv4.
+		127.0.0.1   localhost.localdomain localhost
+		# IPv6.
+		::1         localhost.localdomain localhost ip6-localhost ip6-loopback
+		fe00::0     ip6-localnet
+		ff00::0     ip6-mcastprefix
+		ff02::1     ip6-allnodes
+		ff02::2     ip6-allrouters
+		ff02::3     ip6-allhosts
+	EOF
     cd $cur
 fi
 
@@ -62,34 +61,36 @@ if [ ! -d "$binds" ]; then
     mkdir "$binds"
 fi
 
-bin=start.sh
+bin=start-ubuntu.sh
 echo "writing launch script"
 cat > $bin <<- EOM
 #!/bin/bash
 cd \$(dirname \$0)
-#unset LD_PRELOAD in case termux-exec is installed
+## unset LD_PRELOAD in case termux-exec is installed
 unset LD_PRELOAD
 command="proot"
 command+=" --link2symlink"
+command+=" --kill-on-exit"
 command+=" -0"
 command+=" -r $folder"
 if [ -n "\$(ls -A $binds)" ]; then
     for f in $binds/* ;do
-        . \$f
+      . \$f
     done
 fi
-command+=" -b /system"
-command+=" -b /dev/"
-command+=" -b /sys/"
-command+=" -b /proc/"
-#uncomment the following line to have access to the home directory of termux
-#command+=" -b /data/data/com.termux/files/home"
+command+=" -b /dev"
+command+=" -b /proc"
+command+=" -b $folder/root:/dev/shm"
+## uncomment the following line to have access to the home directory of termux
+command+=" -b /data/data/com.termux/files:/termux"
+## uncomment the following line to mount /sdcard directly to / 
+#command+=" -b /sdcard"
 command+=" -w /root"
 command+=" /usr/bin/env -i"
 command+=" HOME=/root"
 command+=" PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/games:/usr/local/games"
 command+=" TERM=\$TERM"
-command+=" LANG=\$LANG"
+command+=" LANG=C.UTF-8"
 command+=" /bin/bash --login"
 com="\$@"
 if [ -z "\$1" ];then
@@ -98,8 +99,11 @@ else
     \$command -c "\$com"
 fi
 EOM
+
 echo "fixing shebang of $bin"
 termux-fix-shebang $bin
 echo "making $bin executable"
 chmod +x $bin
-echo "You can now launch Ubuntu with the ./start.sh script"
+echo "removing image for some space"
+rm -rf ubuntu.tar.gz
+echo "You can now launch Ubuntu with the ./${bin} script"
