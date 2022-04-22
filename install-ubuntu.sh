@@ -18,28 +18,33 @@ if [ -d "$folder" ]; then
     first=1
     echo "skipping downloading"
 fi
-
+targzball="ubuntu.tar..gz"
 if [ "$first" != 1 ];then
-    if [ ! -f "ubuntu.tar.gz" ]; then
+    if [ ! -f "$targzball" ]; then
         echo "downloading ubuntu-image"
-        if [ "$(dpkg --print-architecture)" = "aarch64" ];then
-            wget https://partner-images.canonical.com/core/xenial/current/ubuntu-xenial-core-cloudimg-arm64-root.tar.gz -O ubuntu.tar.gz
-        elif [ "$(dpkg --print-architecture)" = "arm" ];then
-            wget https://partner-images.canonical.com/core/xenial/current/ubuntu-xenial-core-cloudimg-armhf-root.tar.gz -O ubuntu.tar.gz
-        elif [ "$(dpkg --print-architecture)" = "i686" ];then
-            wget https://partner-images.canonical.com/core/xenial/current/ubuntu-xenial-core-cloudimg-i386-root.tar.gz -O ubuntu.tar.gz
-        elif [ "$(dpkg --print-architecture)" = "i386" ];then
-            wget https://partner-images.canonical.com/core/xenial/current/ubuntu-xenial-core-cloudimg-i386-root.tar.gz -O ubuntu.tar.gz
-        else
-            echo "unknown architecture"
-            exit 1
-        fi
+        case `dpkg --print-architecture` in
+            aarch64)
+                archurl="arm64" ;;
+            arm)
+                archurl="armhf" ;;
+            amd64)
+                archurl="amd64" ;;
+            x86_64)
+                archurl="amd64" ;;	
+            i*86)
+                archurl="i386" ;;
+            x86)
+                archurl="i386" ;;
+            *)
+                echo "unknown architecture"; exit 1 ;;
+		esac
+	wget "https://cdimage.ubuntu.com/ubuntu-base/releases/xenial/release/ubuntu-base-16.04.6-base-${archurl}.tar.gz" -O $targzball
     fi
     cur=`pwd`
     mkdir -p $folder
     cd $folder
     echo "decompressing ubuntu image"
-    proot --link2symlink tar -xf $cur/ubuntu.tar.gz --exclude='dev'||:
+    proot --link2symlink tar -xf "${cur}/${targzball}" --exclude='dev'||:
     echo "fixing nameserver, otherwise it can't connect to the internet"
     echo "nameserver 8.8.8.8" >> etc/resolv.conf
     echo "nameserver 8.8.4.4" >> etc/resolv.conf
@@ -118,5 +123,5 @@ termux-fix-shebang $bin
 echo "making $bin executable"
 chmod +x $bin
 echo "removing image for some space"
-rm -rf ubuntu.tar.gz
+rm -rf $targzball
 echo "You can now launch Ubuntu with the ./${bin} script"
